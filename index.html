@@ -340,11 +340,11 @@
                 }
             }
 
-            // Lógica de Monitoramento e Grampeamento Dinâmico (Correção aqui)
+            // Lógica de Monitoramento e Grampeamento Dinâmico
             if (dpsLigado) {
                 // Durante o surto, o varistor limita a tensão com base no Up. Em regime normal, com base no Uc.
                 let limiteGrampeamento = surtoAtivo ? currentUp : currentUc;
-
+            
                 if (Math.abs(currentVoltage) >= limiteGrampeamento) {
                     isClamped = true;
                     currentVoltage = currentVoltage > 0 ? limiteGrampeamento : -limiteGrampeamento;
@@ -352,22 +352,40 @@
                     // Alerta de Uc muito baixo (só aparece se a onda senoidal normal ultrapassar Uc)
                     if (!alertBloqueadoPorSurto && Math.abs(V_PEAK * Math.sin(time)) >= currentUc) {
                         showAlert("⚠️ ERRO DE DIMENSIONAMENTO (Uc Baixo): A tensão Uc escolhida está abaixo ou muito próxima do pico da rede elétrica. O DPS operará em condução contínua, causando queima por saturação térmica.", "warning");
+                        
+                        // Se a onda voltou a ultrapassar, cancela o timer de esconder para a mensagem continuar na tela
+                        if (timeoutUcAlert) {
+                            clearTimeout(timeoutUcAlert);
+                            timeoutUcAlert = null;
+                        }
                     }
                 } else if (!alertBloqueadoPorSurto && alertBox.classList.contains('alert-warning')) {
-                    // Se o Uc for reajustado para cima e sair da zona de perigo, limpa o aviso
-                    hideAlert();
+                    // Se a onda caiu abaixo de Uc (ou se o Uc for reajustado para cima), espera 4 segundos antes de sumir
+                    if (!timeoutUcAlert) {
+                        timeoutUcAlert = setTimeout(() => {
+                            hideAlert();
+                            timeoutUcAlert = null;
+                        }, 4000); // 4000 milissegundos = 4 segundos
+                    }
                 }
+            
                 if (progressoSurto >= 60) { // Tempo ideal de retenção do pulso visual
                     surtoAtivo = false;
                     alertBloqueadoPorSurto = false;
-                    // Mantém a mensagem estável por 4 segundos após sumir o surto antes de limpar
+                    // Mantém a mensagem estável por 5 segundos após sumir o surto antes de limpar
                     timeoutLimpezaAlert = setTimeout(() => {
                         if (!surtoAtivo && !alertBloqueadoPorSurto) hideAlert();
-                    }, 4000);
+                    }, 5000);
                 }
             } else if (!alertBloqueadoPorSurto) {
-                // Caso o DPS seja desligado e estivesse mostrando o erro de Uc, limpa imediatamente
-                if (alertBox.className.includes('alert-warning')) hideAlert();
+                // Caso o DPS seja desligado, limpa imediatamente e cancela qualquer timer pendente
+                if (alertBox.className.includes('alert-warning')) {
+                    hideAlert();
+                    if (timeoutUcAlert) {
+                        clearTimeout(timeoutUcAlert);
+                        timeoutUcAlert = null;
+                    }
+                }
             }
 
             // Atualiza o voltímetro digital com o pico absoluto verdadeiro do ciclo
