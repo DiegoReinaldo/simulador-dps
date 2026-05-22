@@ -333,35 +333,40 @@
                 if (progressoSurto >= 60) { // Tempo ideal de retenção do pulso visual
                     surtoAtivo = false;
                     alertBloqueadoPorSurto = false;
-                    // Mantém a mensagem estável por 5 segundos após sumir o surto antes de limpar
+                    // Mantém a mensagem estável por 4 segundos após sumir o surto antes de limpar
                     timeoutLimpezaAlert = setTimeout(() => {
                         if (!surtoAtivo && !alertBloqueadoPorSurto) hideAlert();
-                    }, 5000);
+                    }, 4000);
                 }
             }
 
-            // Lógica de Monitoramento e Grampeamento Dinâmico (Correção do Piscar/Flicker)
+            // Lógica de Monitoramento e Grampeamento Dinâmico (Correção aqui)
             if (dpsLigado) {
                 // Durante o surto, o varistor limita a tensão com base no Up. Em regime normal, com base no Uc.
                 let limiteGrampeamento = surtoAtivo ? currentUp : currentUc;
-            
+
                 if (Math.abs(currentVoltage) >= limiteGrampeamento) {
                     isClamped = true;
                     currentVoltage = currentVoltage > 0 ? limiteGrampeamento : -limiteGrampeamento;
-                }
-                
-                // CONTROLE ESTÁVEL DO ALERTA (Baseado no valor fixo do slider, impedindo o piscar)
-                if (!alertBloqueadoPorSurto) {
-                    if (currentUc <= V_PEAK) {
-                        // Se o Uc escolhido for menor ou igual ao pico da rede (242V), o erro é permanente
+                    
+                    // Alerta de Uc muito baixo (só aparece se a onda senoidal normal ultrapassar Uc)
+                    if (!alertBloqueadoPorSurto && Math.abs(V_PEAK * Math.sin(time)) >= currentUc) {
                         showAlert("⚠️ ERRO DE DIMENSIONAMENTO (Uc Baixo): A tensão Uc escolhida está abaixo ou muito próxima do pico da rede elétrica. O DPS operará em condução contínua, causando queima por saturação térmica.", "warning");
-                    } else if (alertBox.className.includes('alert-warning')) {
-                        // Se o usuário subir o Uc para um valor seguro, apaga o alerta imediatamente
-                        hideAlert();
                     }
+                } else if (!alertBloqueadoPorSurto && alertBox.classList.contains('alert-warning')) {
+                    // Se o Uc for reajustado para cima e sair da zona de perigo, limpa o aviso
+                    hideAlert();
+                }
+                if (progressoSurto >= 60) { // Tempo ideal de retenção do pulso visual
+                    surtoAtivo = false;
+                    alertBloqueadoPorSurto = false;
+                    // Mantém a mensagem estável por 4 segundos após sumir o surto antes de limpar
+                    timeoutLimpezaAlert = setTimeout(() => {
+                        if (!surtoAtivo && !alertBloqueadoPorSurto) hideAlert();
+                    }, 4000);
                 }
             } else if (!alertBloqueadoPorSurto) {
-                // Caso o DPS seja desligado, limpa o aviso de Uc baixo imediatamente
+                // Caso o DPS seja desligado e estivesse mostrando o erro de Uc, limpa imediatamente
                 if (alertBox.className.includes('alert-warning')) hideAlert();
             }
 
