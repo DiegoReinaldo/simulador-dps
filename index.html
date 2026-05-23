@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -48,6 +47,57 @@
             max-width: 850px;
         }
 
+        /* Área do Circuito Elétrico */
+        .circuit-panel {
+            background-color: #0b0c10;
+            border: 2px solid #454552;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .circuit-svg {
+            width: 100%;
+            height: 180px;
+            display: block;
+        }
+
+        /* Animações de Fluxo de Corrente */
+        .flow-line {
+            stroke-dasharray: 10, 10;
+            animation: dash 1s linear infinite;
+        }
+        
+        .flow-surge {
+            stroke-dasharray: 15, 10;
+            animation: dash-fast 0.5s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+        @keyframes dash-fast {
+            to { stroke-dashoffset: -25; }
+        }
+
+        .hidden { display: none; }
+        .shake { animation: shake 0.3s infinite; }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
         /* Área do Gráfico */
         .oscilloscope {
             position: relative;
@@ -64,12 +114,12 @@
             height: 400px;
         }
 
-        /* Alerta de Status Ajustado para evitar vazamentos */
+        /* Alerta de Status Ajustado */
         #status-alert {
             position: absolute;
             top: 20px;
             left: 20px;
-            right: 260px; /* Dá espaço para o voltímetro fixo no canto direito */
+            right: 260px; 
             padding: 12px;
             border-radius: 6px;
             font-weight: bold;
@@ -182,6 +232,37 @@
     <p class="subtitle">Análise gráfica e comportamental de surtos transitórios conforme a NBR 5410</p>
 
     <div class="container">
+        
+        <div class="circuit-panel">
+            <svg viewBox="0 0 800 180" class="circuit-svg">
+                <text x="10" y="35" fill="#a4b0be" font-size="14" font-weight="bold">L (Fase)</text>
+                <text x="10" y="115" fill="#a4b0be" font-size="14" font-weight="bold">N (Neutro)</text>
+                <text x="10" y="165" fill="#2ed573" font-size="14" font-weight="bold">PE (Terra)</text>
+
+                <line x1="80" y1="30" x2="750" y2="30" stroke="#454552" stroke-width="4" />
+                <line x1="80" y1="110" x2="750" y2="110" stroke="#454552" stroke-width="4" />
+                <line x1="80" y1="160" x2="400" y2="160" stroke="#218c53" stroke-width="4" />
+
+                <line x1="350" y1="30" x2="350" y2="160" stroke="#454552" stroke-width="4" />
+                <line x1="600" y1="30" x2="600" y2="110" stroke="#454552" stroke-width="4" /> 
+
+                <path id="flow-normal" d="M 80 30 L 600 30 L 600 110 L 80 110" fill="none" stroke="#00d2ff" stroke-width="3" class="flow-line" />
+                <path id="flow-surge-dps" d="M 80 30 L 350 30 L 350 160 L 80 160" fill="none" stroke="#eccc68" stroke-width="6" class="flow-surge hidden" />
+                <path id="flow-surge-equip" d="M 80 30 L 600 30 L 600 110" fill="none" stroke="#ff4757" stroke-width="8" class="flow-surge hidden" />
+
+                <g id="group-dps" transform="translate(320, 60)">
+                    <rect width="60" height="40" fill="#2a2a40" stroke="#2ed573" stroke-width="2" rx="4" id="rect-dps"/>
+                    <text x="30" y="17" fill="white" font-size="13" font-weight="bold" text-anchor="middle">DPS</text>
+                    <text id="dps-status-text" x="30" y="32" fill="#a4b0be" font-size="10" font-weight="bold" text-anchor="middle">ABERTO</text>
+                </g>
+
+                <g id="group-equip" transform="translate(540, 50)">
+                    <rect width="120" height="60" fill="#2a2a40" stroke="#00d2ff" stroke-width="2" rx="4" id="rect-equip"/>
+                    <text x="60" y="35" fill="white" font-size="14" font-weight="bold" text-anchor="middle">Equipamento</text>
+                </g>
+            </svg>
+        </div>
+
         <div class="oscilloscope">
             <div id="status-alert">STATUS</div>
             <canvas id="graphCanvas" width="800" height="400"></canvas>
@@ -195,7 +276,7 @@
                     <label> AC Máxima Admissível (NBR 5410): <span>242V Pico</span></label>
                 </div>
                 <div class="slider-group">
-                    <label>Limite de Ruptura Isolação (Equipamento): <span>1500V</span></label>
+                    <label>Limite de Ruptura Isolação: <span>1500V</span></label>
                 </div>
                 <div class="slider-group">
                     <label>Tensão de Ensaio do Surto: <span>5000V</span></label>
@@ -215,15 +296,15 @@
             </div>
 
             <div class="action-buttons">
-                <button id="btn-dps" class="off">🛡️ LIGAR DPS</button>
+                <button id="btn-dps" class="">🛡️ DPS CONECTADO</button>
                 <button id="btn-surto">⚡ DISPARAR SURTO (5000V)</button>
             </div>
         </div>
         
         <div class="legend">
-            <span><div class="color-box" style="background: #00d2ff;"></div> Senoide de Operação Normal</span>
-            <span><div class="color-box" style="background: #ff4757;"></div> Limite Crítico de Ruptura (1500V)</span>
-            <span><div class="color-box" style="background: #eccc68;"></div> Linha de Grampeamento do DPS (Up)</span>
+            <span><div class="color-box" style="background: #00d2ff;"></div> Senoide / Corrente Normal</span>
+            <span><div class="color-box" style="background: #ff4757;"></div> Falha de Ruptura (1500V)</span>
+            <span><div class="color-box" style="background: #eccc68;"></div> Desvio / DPS Conduzindo</span>
         </div>
     </div>
 
@@ -232,8 +313,7 @@
         const ctx = canvas.getContext('2d');
         const alertBox = document.getElementById('status-alert');
 
-        // Constantes Físicas Configuradas Conforme NBR 5410
-        const V_PEAK = 242; // Tensão máxima operacional considerando flutuação (U0 * 1.1)
+        const V_PEAK = 242; 
         const SURGE_PEAK = 5000;
         const ARC_THRESHOLD = 1500;
         const MAX_Y_SCALE = 5500;
@@ -242,41 +322,46 @@
         let waveData = new Array(POINTS_COUNT).fill(0).map(() => ({ voltage: 0, clamped: false }));
         let time = 0;
         
-        // Estado do Simulador
-        let dpsLigado = false;
+        let dpsLigado = true; 
         let surtoAtivo = false;
         let progressoSurto = 0;
         let voltimetroMaximo = 242; 
 
-        // Controle Estabilizado de Alertas (Impede flickering)
         let alertBloqueadoPorSurto = false;
         let timeoutLimpezaAlert = null;
 
-        // Elementos da UI
         const sliderUc = document.getElementById('slider-uc');
         const sliderUp = document.getElementById('slider-up');
         const valUc = document.getElementById('val-uc');
         const valUp = document.getElementById('val-up');
         const btnDps = document.getElementById('btn-dps');
 
+        const flowNormal = document.getElementById('flow-normal');
+        const flowSurgeDps = document.getElementById('flow-surge-dps');
+        const flowSurgeEquip = document.getElementById('flow-surge-equip');
+        const rectDps = document.getElementById('rect-dps');
+        const rectEquip = document.getElementById('rect-equip');
+        const groupEquip = document.getElementById('group-equip');
+        const dpsStatusText = document.getElementById('dps-status-text');
+
         sliderUc.addEventListener('input', (e) => valUc.textContent = e.target.value + 'V');
         sliderUp.addEventListener('input', (e) => valUp.textContent = e.target.value + 'V');
 
-        // Ligar/Desligar DPS
         btnDps.addEventListener('click', () => {
             dpsLigado = !dpsLigado;
             if (dpsLigado) {
                 btnDps.className = '';
-                btnDps.textContent = '🛡️ DPS ATIVO';
+                btnDps.textContent = '🛡️ DPS CONECTADO';
+                rectDps.setAttribute('stroke', '#2ed573');
             } else {
                 btnDps.className = 'off';
-                btnDps.textContent = '🛡️ LIGAR DPS';
+                btnDps.textContent = '🛡️ CONECTAR DPS';
+                rectDps.setAttribute('stroke', '#454552');
                 if (!surtoAtivo) hideAlert();
             }
             if (!surtoAtivo) voltimetroMaximo = 242;
         });
 
-        // Disparar Surto
         document.getElementById('btn-surto').addEventListener('click', () => {
             if (!surtoAtivo) {
                 surtoAtivo = true;
@@ -302,6 +387,49 @@
             return centerY - (voltage / MAX_Y_SCALE) * centerY;
         }
 
+        function atualizarPainelCircuito(isClamped, tensaoNaCarga) {
+            const falhaEquipamento = Math.abs(tensaoNaCarga) >= ARC_THRESHOLD;
+
+            // Lógica do Status da Chave do DPS
+            if (dpsLigado) {
+                if (isClamped) {
+                    dpsStatusText.textContent = "FECHADO";
+                    dpsStatusText.setAttribute('fill', '#eccc68');
+                    rectDps.setAttribute('stroke', '#eccc68');
+                    
+                    flowSurgeDps.classList.remove('hidden');
+                    flowSurgeDps.setAttribute('stroke', falhaEquipamento ? '#ff4757' : '#eccc68');
+                } else {
+                    dpsStatusText.textContent = "ABERTO";
+                    dpsStatusText.setAttribute('fill', '#a4b0be');
+                    rectDps.setAttribute('stroke', '#2ed573');
+                    flowSurgeDps.classList.add('hidden');
+                }
+            } else {
+                dpsStatusText.textContent = "DESLIG.";
+                dpsStatusText.setAttribute('fill', '#454552');
+                rectDps.setAttribute('stroke', '#454552');
+                flowSurgeDps.classList.add('hidden');
+            }
+
+            // Lógica do Equipamento
+            if (falhaEquipamento) {
+                flowSurgeEquip.classList.remove('hidden');
+                flowSurgeEquip.setAttribute('stroke', '#ff4757');
+                
+                flowNormal.setAttribute('stroke', '#ff4757');
+                groupEquip.classList.add('shake');
+                rectEquip.setAttribute('fill', 'rgba(255, 71, 87, 0.3)');
+                rectEquip.setAttribute('stroke', '#ff4757');
+            } else {
+                flowSurgeEquip.classList.add('hidden');
+                flowNormal.setAttribute('stroke', (dpsLigado && isClamped) ? '#eccc68' : '#00d2ff');
+                groupEquip.classList.remove('shake');
+                rectEquip.setAttribute('fill', '#2a2a40');
+                rectEquip.setAttribute('stroke', '#00d2ff');
+            }
+        }
+
         function render() {
             time += 0.05; 
             let currentVoltage = V_PEAK * Math.sin(time);
@@ -310,78 +438,62 @@
             const currentUc = parseFloat(sliderUc.value);
             const currentUp = parseFloat(sliderUp.value);
 
-            // Injeção Controlada do Surto Transiente
             if (surtoAtivo) {
                 progressoSurto += 1;
                 if (progressoSurto > 5 && progressoSurto < 25) {
-                    // Pulso amortecido mais suave para melhor visualização na tela
                     let fatorPulso = Math.sin((progressoSurto - 5) / 20 * Math.PI); 
                     currentVoltage += SURGE_PEAK * fatorPulso;
                 }
                 
-                // Determina o estado final fixo do alerta durante o surto (Evita oscilação de texto)
                 if (dpsLigado) {
                     if (currentUp >= ARC_THRESHOLD) {
-                        showAlert("❌ FALHA DE COORDENAÇÃO: O DPS atuou, mas o nível de proteção residual (Up = " + currentUp + "V) é maior que o limite suportado pelo equipamento elétrico.", "danger");
+                        showAlert("❌ FALHA DE COORDENAÇÃO: O DPS atuou, mas o nível de proteção (Up = " + currentUp + "V) rompeu a isolação.", "danger");
                     } else {
-                        showAlert("✅ SURTO PROTEGIDO: O DPS detectou a sobretensão e grampeou o pulso de forma segura em " + currentUp + "V, protegendo a integridade da carga.", "success");
+                        showAlert("✅ SURTO PROTEGIDO: O DPS fechou o circuito e desviou o surto (Up = " + currentUp + "V).", "success");
                     }
                 } else {
-                    showAlert("💥 ARCO ELÉTRICO CATASTRÓFICO: Sem DPS ativo, a sobretensão de 5000V rompeu instantaneamente a isolação sólida, inutilizando o equipamento.", "danger");
+                    showAlert("💥 ARCO ELÉTRICO: Sem DPS, a sobretensão rompeu instantaneamente a isolação sólida.", "danger");
                 }
 
-                if (progressoSurto >= 60) { // Tempo ideal de retenção do pulso visual
+                if (progressoSurto >= 60) {
                     surtoAtivo = false;
                     alertBloqueadoPorSurto = false;
-                    // Mantém a mensagem estável por 5 segundos após sumir o surto antes de limpar
                     timeoutLimpezaAlert = setTimeout(() => {
                         if (!surtoAtivo && !alertBloqueadoPorSurto) hideAlert();
                     }, 5000);
                 }
             }
 
-            // Lógica de Monitoramento e Grampeamento Dinâmico (Correção aqui)
             if (dpsLigado) {
-                // Durante o surto, o varistor limita a tensão com base no Up. Em regime normal, com base no Uc.
                 let limiteGrampeamento = surtoAtivo ? currentUp : currentUc;
 
+                // O DPS só "fecha" a chave quando a tensão excede o limite (Uc ou Up)
                 if (Math.abs(currentVoltage) >= limiteGrampeamento) {
                     isClamped = true;
                     currentVoltage = currentVoltage > 0 ? limiteGrampeamento : -limiteGrampeamento;
                     
-                    // Alerta de Uc muito baixo (só aparece se a onda senoidal normal ultrapassar Uc)
                     if (!alertBloqueadoPorSurto && Math.abs(V_PEAK * Math.sin(time)) >= currentUc) {
-                        showAlert("⚠️ ERRO DE DIMENSIONAMENTO (Uc Baixo): A tensão Uc escolhida está abaixo ou muito próxima do pico da rede elétrica. O DPS operará em condução contínua, causando queima por saturação térmica.", "warning");
+                        showAlert("⚠️ ERRO: Uc baixo! O DPS está fechando em regime normal e fugindo corrente.", "warning");
                     }
                 } else if (!alertBloqueadoPorSurto && alertBox.classList.contains('alert-warning')) {
-                    // Se o Uc for reajustado para cima e sair da zona de perigo, limpa o aviso
                     hideAlert();
                 }
-                if (progressoSurto >= 60) { // Tempo ideal de retenção do pulso visual
-                    surtoAtivo = false;
-                    alertBloqueadoPorSurto = false;
-                    // Mantém a mensagem estável por 5 segundos após sumir o surto antes de limpar
-                    timeoutLimpezaAlert = setTimeout(() => {
-                        if (!surtoAtivo && !alertBloqueadoPorSurto) hideAlert();
-                    }, 5000);
-                }
             } else if (!alertBloqueadoPorSurto) {
-                // Caso o DPS seja desligado e estivesse mostrando o erro de Uc, limpa imediatamente
                 if (alertBox.className.includes('alert-warning')) hideAlert();
             }
 
-            // Atualiza o voltímetro digital com o pico absoluto verdadeiro do ciclo
             if (Math.abs(currentVoltage) > voltimetroMaximo) {
                 voltimetroMaximo = Math.round(Math.abs(currentVoltage));
             }
 
+            atualizarPainelCircuito(isClamped, currentVoltage);
+
             waveData.shift();
             waveData.push({ voltage: currentVoltage, clamped: isClamped });
 
-            // Renderização do Canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Grade Simétrica do Osciloscópio
+            // Grade
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -389,11 +501,11 @@
             for (let x = 0; x <= canvas.width; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
             ctx.stroke();
 
-            // Linha Central de Referência (Neutro / Terra)
+            // Centro
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
             ctx.beginPath(); ctx.moveTo(0, canvas.height / 2); ctx.lineTo(canvas.width, canvas.height / 2); ctx.stroke();
 
-            // Desenho do Limite de Ruptura Dielétrica (Isolação)
+            // Limite Ruptura
             ctx.strokeStyle = '#ff4757';
             ctx.lineWidth = 1.5;
             ctx.setLineDash([8, 8]);
@@ -402,20 +514,20 @@
             ctx.moveTo(0, mapY(-ARC_THRESHOLD)); ctx.lineTo(canvas.width, mapY(-ARC_THRESHOLD));
             ctx.stroke();
             
-            // Desenho Dinâmico da Linha de Proteção Ativa do DPS
+            // Linha DPS
             if (dpsLigado) {
-                let linhaReferenciaVisual = surtoAtivo ? currentUp : currentUc;
+                let linhaReferencia = surtoAtivo ? currentUp : currentUc;
                 ctx.strokeStyle = '#eccc68';
                 ctx.lineWidth = 1.5;
                 ctx.setLineDash([4, 4]);
                 ctx.beginPath();
-                ctx.moveTo(0, mapY(linhaReferenciaVisual)); ctx.lineTo(canvas.width, mapY(linhaReferenciaVisual));
-                ctx.moveTo(0, mapY(-linhaReferenciaVisual)); ctx.lineTo(canvas.width, mapY(-linhaReferenciaVisual));
+                ctx.moveTo(0, mapY(linhaReferencia)); ctx.lineTo(canvas.width, mapY(linhaReferencia));
+                ctx.moveTo(0, mapY(-linhaReferencia)); ctx.lineTo(canvas.width, mapY(-linhaReferencia));
                 ctx.stroke();
             }
             ctx.setLineDash([]);
 
-            // Labels Estáticos Internos do Monitor
+            // Textos Gráfico
             ctx.font = '11px sans-serif';
             ctx.fillStyle = '#ff4757';
             ctx.fillText(`Limite de Ruptura Suportável (${ARC_THRESHOLD}V)`, 15, mapY(ARC_THRESHOLD) - 6);
@@ -429,7 +541,7 @@
                 }
             }
 
-            // Display Digital do Voltímetro Fixo à Direita
+            // Voltímetro
             ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
             ctx.fillRect(canvas.width - 230, 15, 215, 45);
             ctx.strokeStyle = dpsLigado && currentUp >= ARC_THRESHOLD && voltimetroMaximo > ARC_THRESHOLD ? '#ff4757' : (surtoAtivo ? '#2ed573' : '#00d2ff');
@@ -440,7 +552,7 @@
             ctx.font = 'bold 12px monospace';
             ctx.fillText(`PICO MÁX: ${voltimetroMaximo} V`, canvas.width - 210, 41);
 
-            // Traçado da Onda de Tensão Principal
+            // Traço
             ctx.lineWidth = 3;
             ctx.beginPath();
             for (let i = 0; i < waveData.length; i++) {
