@@ -233,6 +233,11 @@
 
     <div class="container">
         
+        <div class="oscilloscope">
+            <div id="status-alert">STATUS</div>
+            <canvas id="graphCanvas" width="800" height="400"></canvas>
+        </div>
+
         <div class="circuit-panel">
             <svg viewBox="0 0 800 180" class="circuit-svg">
                 <text x="10" y="35" fill="#a4b0be" font-size="14" font-weight="bold">L (Fase)</text>
@@ -262,12 +267,7 @@
                 </g>
             </svg>
         </div>
-
-        <div class="oscilloscope">
-            <div id="status-alert">STATUS</div>
-            <canvas id="graphCanvas" width="800" height="400"></canvas>
-        </div>
-
+        
         <div class="controls-wrapper">
             <div class="panel-section">
                 <div class="panel-title">1. Dados do Sistema</div>
